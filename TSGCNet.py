@@ -219,11 +219,8 @@ class TSGCNet(nn.Module):
 
 
     def forward(self, x):
-        batch_size = x.size(0)
         coor = x[:, :12, :]
-        fea = coor
         nor = x[:, 12:, :]
-        neighbor = knn(coor[:, 9:, :], k=self.k)
 
         # transform
         trans_c = self.FTM_c1(coor)
