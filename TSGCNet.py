@@ -140,59 +140,57 @@ class TSGCNet(nn.Module):
         self.k = k
         ''' coordinate stream '''
         self.bn1_c = nn.BatchNorm2d(64)
-        self.bn2_c = nn.BatchNorm2d(64)
-        self.bn3_c = nn.BatchNorm2d(128)
-        self.bn4_c = nn.BatchNorm2d(256)
-        self.bn5_c = nn.BatchNorm1d(512)
+        self.bn2_c = nn.BatchNorm2d(128)
+        self.bn3_c = nn.BatchNorm2d(256)
+        self.bn4_c = nn.BatchNorm2d(512)
         self.conv1_c = nn.Sequential(nn.Conv2d(in_channels*2, 64, kernel_size=1, bias=False),
                                    self.bn1_c,
                                    nn.LeakyReLU(negative_slope=0.2))
 
 
-        self.conv2_c = nn.Sequential(nn.Conv2d(64*2, 64, kernel_size=1, bias=False),
+        self.conv2_c = nn.Sequential(nn.Conv2d(64*2, 128, kernel_size=1, bias=False),
                                    self.bn2_c,
                                    nn.LeakyReLU(negative_slope=0.2))
 
 
 
-        self.conv3_c = nn.Sequential(nn.Conv2d(64*2, 128, kernel_size=1, bias=False),
+        self.conv3_c = nn.Sequential(nn.Conv2d(128*2, 256, kernel_size=1, bias=False),
                                    self.bn3_c,
                                    nn.LeakyReLU(negative_slope=0.2))
 
 
 
-        self.conv5_c = nn.Sequential(nn.Conv1d(256, 512, kernel_size=1, bias=False),
-                                     self.bn5_c,
+        self.conv4_c = nn.Sequential(nn.Conv1d(448, 512, kernel_size=1, bias=False),
+                                     self.bn4_c,
                                      nn.LeakyReLU(negative_slope=0.2))
 
         self.attention_layer1_c = GraphAttention(feature_dim=12, out_dim=64, K=self.k)
-        self.attention_layer2_c = GraphAttention(feature_dim=64, out_dim=64, K=self.k)
-        self.attention_layer3_c = GraphAttention(feature_dim=64, out_dim=128, K=self.k)
+        self.attention_layer2_c = GraphAttention(feature_dim=64, out_dim=128, K=self.k)
+        self.attention_layer3_c = GraphAttention(feature_dim=128, out_dim=256, K=self.k)
         self.FTM_c1 = STNkd(k=12)
         ''' normal stream '''
         self.bn1_n = nn.BatchNorm2d(64)
-        self.bn2_n = nn.BatchNorm2d(64)
-        self.bn3_n = nn.BatchNorm2d(128)
-        self.bn4_n = nn.BatchNorm2d(256)
-        self.bn5_n = nn.BatchNorm1d(512)
+        self.bn2_n = nn.BatchNorm2d(128)
+        self.bn3_n = nn.BatchNorm2d(256)
+        self.bn4_n = nn.BatchNorm2d(512)
         self.conv1_n = nn.Sequential(nn.Conv2d((in_channels)*2, 64, kernel_size=1, bias=False),
                                      self.bn1_n,
                                      nn.LeakyReLU(negative_slope=0.2))
 
 
-        self.conv2_n = nn.Sequential(nn.Conv2d(64*2, 64, kernel_size=1, bias=False),
+        self.conv2_n = nn.Sequential(nn.Conv2d(64*2, 128, kernel_size=1, bias=False),
                                      self.bn2_n,
                                      nn.LeakyReLU(negative_slope=0.2))
 
 
-        self.conv3_n = nn.Sequential(nn.Conv2d(64*2, 128, kernel_size=1, bias=False),
+        self.conv3_n = nn.Sequential(nn.Conv2d(128*2, 256, kernel_size=1, bias=False),
                                      self.bn3_n,
                                      nn.LeakyReLU(negative_slope=0.2))
 
 
 
-        self.conv5_n = nn.Sequential(nn.Conv1d(256, 512, kernel_size=1, bias=False),
-                                     self.bn5_n,
+        self.conv4_n = nn.Sequential(nn.Conv1d(448, 512, kernel_size=1, bias=False),
+                                     self.bn4_n,
                                      nn.LeakyReLU(negative_slope=0.2))
         self.FTM_n1 = STNkd(k=12)
 
@@ -256,9 +254,9 @@ class TSGCNet(nn.Module):
         nor3 = nor3.max(dim=-1, keepdim=False)[0]
 
         coor = torch.cat((coor1, coor2, coor3), dim=1)
-        coor = self.conv5_c(coor)
+        coor = self.conv4_c(coor)
         nor = torch.cat((nor1, nor2, nor3), dim=1)
-        nor = self.conv5_n(nor)
+        nor = self.conv4_n(nor)
 
         avgSum_coor = coor.sum(1)/512
         avgSum_nor = nor.sum(1)/512
@@ -267,7 +265,6 @@ class TSGCNet(nn.Module):
         weight_nor = (avgSum_nor / avgSum).reshape(1,1,16000)
         x = torch.cat((coor*weight_coor, nor*weight_nor), dim=1)
 
-        x = torch.cat((coor, nor), dim=1)
         weight = self.fa(x)
         x = weight*x
 
