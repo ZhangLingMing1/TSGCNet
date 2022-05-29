@@ -142,7 +142,7 @@ class TSGCNet(nn.Module):
         self.bn1_c = nn.BatchNorm2d(64)
         self.bn2_c = nn.BatchNorm2d(128)
         self.bn3_c = nn.BatchNorm2d(256)
-        self.bn4_c = nn.BatchNorm2d(512)
+        self.bn4_c = nn.BatchNorm1d(512)
         self.conv1_c = nn.Sequential(nn.Conv2d(in_channels*2, 64, kernel_size=1, bias=False),
                                    self.bn1_c,
                                    nn.LeakyReLU(negative_slope=0.2))
@@ -172,7 +172,7 @@ class TSGCNet(nn.Module):
         self.bn1_n = nn.BatchNorm2d(64)
         self.bn2_n = nn.BatchNorm2d(128)
         self.bn3_n = nn.BatchNorm2d(256)
-        self.bn4_n = nn.BatchNorm2d(512)
+        self.bn4_n = nn.BatchNorm1d(512)
         self.conv1_n = nn.Sequential(nn.Conv2d((in_channels)*2, 64, kernel_size=1, bias=False),
                                      self.bn1_n,
                                      nn.LeakyReLU(negative_slope=0.2))
