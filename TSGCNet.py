@@ -244,7 +244,7 @@ class TSGCNet(nn.Module):
         coor2 = self.attention_layer2_c(index, coor1, coor2)
         nor2 = nor2.max(dim=-1, keepdim=False)[0]
 
-        coor3, nor3, index = get_graph_feature(nor2, coor2, k=self.k)
+        coor3, nor3, index = get_graph_feature(coor2, nor2, k=self.k)
         coor3 = self.conv3_c(coor3)
         nor3 = self.conv3_n(nor3)
         coor3 = self.attention_layer3_c(index, coor2, coor3)
